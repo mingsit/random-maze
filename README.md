@@ -13,4 +13,4 @@ maze.show_path()
 
 ![Random maze](https://github.com/mingsit/random-maze/blob/main/maze.png)
 
-![Solution](https://github.com/mingsit/random-maze/blob/main/maze_solution.png.png)
+![Solution](https://github.com/mingsit/random-maze/blob/main/maze_solution.png)
