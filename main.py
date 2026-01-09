@@ -1,6 +1,7 @@
 from PIL import Image
 import random
 from copy import deepcopy
+import os
 
 Pixel = 20  # pixel for each cell
 Choices = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # left, right, up, down
@@ -13,13 +14,18 @@ class MazeGenerateor():
     4. (Optional) use .show_path() to output the path
     '''
 
-    def __init__(self):
+    def __init__(self, path_length=3, fake_path_complexity=0.3):
+        self.path_length = path_length  # lenght of the correct path, ratio to size : 2 to 5
+        self.fake_path_complexity = fake_path_complexity
+        # 0.2 to 0.3, higher value means more fake paths, but with higher chance the maze can't be generated
         image_list = ['black.png', 'white.png', 'green.png']
+        corner_image_list = ['top-left.png', 'bottom-left.png', 'bottom-right.png', 'top-right.png']
         # 0 is black (wall), 1 is white (route)
-        self.images = [Image.open(i) for i in image_list]
+        self.images = [Image.open(os.path.join('asset', i)) for i in image_list]
+        self.corner_images = [Image.open(os.path.join('asset', i)).convert('RGBA') for i in corner_image_list]
 
     @staticmethod
-    def is_contradict(delta, target):    
+    def is_contradict(delta, target):
         return delta[0] + target[0] == 0 and delta[1] + target[1] == 0
 
     @staticmethod
@@ -70,7 +76,7 @@ class MazeGenerateor():
                 current_cell = path[-1]
                 target_cell = (current_cell[0] + delta[0], current_cell[1] + delta[1])
                 goal = self.check_goal(target_cell)
-                if goal and step < self.size * 3:
+                if goal and step < self.size * self.path_length:
                     # Too short for a path
                     goal = False
                     continue
@@ -144,52 +150,53 @@ class MazeGenerateor():
             generated_path = self.create_path()
         route_percent = sum(sum(self.matrix, [])) / self.size ** 2
         # Generate fake paths until a portion of the maze is filled
-        while route_percent < 0.3:
+        while route_percent < self.fake_path_complexity:
             self.generate_fake_path()
             route_percent = sum(sum(self.matrix, [])) / self.size ** 2
 
-    def output(self):
-        # Show the maze and save as png
-
-        # Create a new image, 
-        new_im = Image.new('RGB', (Pixel*self.size, Pixel*self.size))
+    def output(self, show_path=False):
+        ''' Visualize the maze and save as png 
+        show_path: False means don't indicate the correct path, True means indicating the correct path'''
 
         matrix = deepcopy(self.matrix)
-        start = self.path[0]
-        finish = self.path[-1]
-        matrix[start[1]][start[0]] = 2
-        matrix[finish[1]][finish[0]] = 2
+        if not show_path:
+            start = self.path[0]
+            finish = self.path[-1]
+            matrix[start[1]][start[0]] = 2
+            matrix[finish[1]][finish[0]] = 2
+        else:
+            for solution in self.path:
+                matrix[solution[1]][solution[0]] = 2
 
+        # Create a new image, 
+        new_im = Image.new('RGBA', (Pixel*self.size, Pixel*self.size))
         # Paste image by looping each cell
         y_offset = 0
-        for row in matrix:
+        for r, row in enumerate(matrix):
             x_offset = 0
-            for cell in row:
-                new_im.paste(self.images[cell], (x_offset,y_offset))
+            for c, cell in enumerate(row):
+                new_im.paste(self.images[cell], (y_offset, x_offset))  # Paste the block of the maze
+                # Cover corner to make it looks better
+                if cell > 0:
+                    if r > 0 and r < self.size-1 and c > 0 and c < self.size-1:
+                        # Check top left
+                        if matrix[r-1][c-1] > 0:
+                            if matrix[r][c-1] == 0 and matrix[r-1][c] == 0:
+                                new_im.paste(self.corner_images[0], (y_offset, x_offset), self.corner_images[0])
+                        # Check bottom left
+                        if matrix[r-1][c+1] > 0:
+                            if matrix[r][c+1] == 0 and matrix[r-1][c] == 0:
+                                new_im.paste(self.corner_images[1], (y_offset, x_offset), self.corner_images[1])
+                        # Check bottom right
+                        if matrix[r+1][c+1] > 0:
+                            if matrix[r][c+1] == 0 and matrix[r+1][c] == 0:
+                                new_im.paste(self.corner_images[2], (y_offset, x_offset), self.corner_images[2])
+                        # Check top right
+                        if matrix[r+1][c-1] > 0:
+                            if matrix[r][c-1] == 0 and matrix[r+1][c] == 0:
+                                new_im.paste(self.corner_images[3], (y_offset, x_offset), self.corner_images[3])
                 x_offset += Pixel
             y_offset += Pixel
 
-        new_im.save('maze.png')
-
-    def show_path(self):
-        # Show the correct path of the maze and save as png
-
-        # Create a new image, 
-        new_im = Image.new('RGB', (Pixel*self.size, Pixel*self.size))
-
-        matrix = deepcopy(self.matrix)
-        for solution in self.path:
-            matrix[solution[1]][solution[0]] = 2
-
-        # Paste image by looping each cell
-        y_offset = 0
-        for row in matrix:
-            x_offset = 0
-            for cell in row:
-                new_im.paste(self.images[cell], (x_offset,y_offset))
-                x_offset += Pixel
-            y_offset += Pixel
-
-        new_im.save('maze_solution.png')
-        pass
-    
+        filename = 'maze.png' if not show_path else 'maze_solution.png'
+        new_im.save(os.path.join('output', filename))
