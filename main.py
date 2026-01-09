@@ -102,7 +102,7 @@ class MazeGenerateor():
         fake_path = []
         # Pick a random start point for fake path
         while not found_fake_start:
-            random_pick = (random.randint(1, self.size), random.randint(1, self.size))
+            random_pick = (random.randint(1, self.size-2), random.randint(1, self.size-2))
             if not MazeGenerateor.has_overlap(self.path, random_pick) and not MazeGenerateor.has_overlap(self.fake_path, random_pick):
                 found_fake_start = True
                 fake_path.append(random_pick)
@@ -124,8 +124,10 @@ class MazeGenerateor():
                 current_cell = fake_path[-1]
                 target_cell = (current_cell[0] + delta[0], current_cell[1] + delta[1])
                 if self.check_goal(target_cell):
-                    # fake path cannot break the maze
+                    # fake path cannot escape the maze
+                    fake_goal = True
                     continue
+                fake_goal = False
                 can_connect = not MazeGenerateor.has_overlap(fake_path, target_cell)
                 if can_connect:
                     # Update value for another loop
@@ -133,10 +135,11 @@ class MazeGenerateor():
                     fake_path.append(target_cell)
                 # Check whether target_cell is connected to whatever path
                 connected_to_any_path  = MazeGenerateor.has_overlap(self.path, target_cell) or MazeGenerateor.has_overlap(self.fake_path, target_cell)
-
-        for cells in fake_path:
-            self.matrix[cells[1]][cells[0]] = 1
-        self.fake_path += deepcopy(fake_path)
+        
+        if not fake_goal:
+            for cells in fake_path:
+                self.matrix[cells[1]][cells[0]] = 1
+            self.fake_path += deepcopy(fake_path)
     
     def generate(self, size):
         # Run self.generate(size) to generate a maze
