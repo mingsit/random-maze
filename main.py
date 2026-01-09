@@ -180,21 +180,17 @@ class MazeGenerateor():
                 if cell > 0:
                     if r > 0 and r < self.size-1 and c > 0 and c < self.size-1:
                         # Check top left
-                        if matrix[r-1][c-1] > 0:
-                            if matrix[r][c-1] == 0 and matrix[r-1][c] == 0:
-                                new_im.paste(self.corner_images[0], (y_offset, x_offset), self.corner_images[0])
+                        if matrix[r][c-1] == 0 and matrix[r-1][c] == 0:
+                            new_im.paste(self.corner_images[0], (y_offset, x_offset), self.corner_images[0])
                         # Check bottom left
-                        if matrix[r-1][c+1] > 0:
-                            if matrix[r][c+1] == 0 and matrix[r-1][c] == 0:
-                                new_im.paste(self.corner_images[1], (y_offset, x_offset), self.corner_images[1])
+                        if matrix[r][c+1] == 0 and matrix[r-1][c] == 0:
+                            new_im.paste(self.corner_images[1], (y_offset, x_offset), self.corner_images[1])
                         # Check bottom right
-                        if matrix[r+1][c+1] > 0:
-                            if matrix[r][c+1] == 0 and matrix[r+1][c] == 0:
-                                new_im.paste(self.corner_images[2], (y_offset, x_offset), self.corner_images[2])
+                        if matrix[r][c+1] == 0 and matrix[r+1][c] == 0:
+                            new_im.paste(self.corner_images[2], (y_offset, x_offset), self.corner_images[2])
                         # Check top right
-                        if matrix[r+1][c-1] > 0:
-                            if matrix[r][c-1] == 0 and matrix[r+1][c] == 0:
-                                new_im.paste(self.corner_images[3], (y_offset, x_offset), self.corner_images[3])
+                        if matrix[r][c-1] == 0 and matrix[r+1][c] == 0:
+                            new_im.paste(self.corner_images[3], (y_offset, x_offset), self.corner_images[3])
                 x_offset += Pixel
             y_offset += Pixel
 
