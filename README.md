@@ -8,9 +8,9 @@ from main import MazeGenerateor
 maze = MazeGenerateor()
 maze.generate(50)  # Input size here
 maze.output()
-maze.show_path()
+maze.output(show_path=True)
 
 
-![Random maze](https://github.com/mingsit/random-maze/blob/main/maze.png)
+![Random maze](https://github.com/mingsit/random-maze/blob/main/output/maze.png)
 
-![Solution](https://github.com/mingsit/random-maze/blob/main/maze_solution.png)
+![Solution](https://github.com/mingsit/random-maze/blob/main/output/maze_solution.png)
